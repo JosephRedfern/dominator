@@ -11,10 +11,11 @@ class SegmentDrawer(object):
         self.brush_size = 30
 
         cv2.namedWindow('draw', flags=cv2.WINDOW_NORMAL)
-        cv2.imshow('draw',image)
+        cv2.imshow('draw', image)
         cv2.resizeWindow('draw', 500, 500)
 
         cv2.namedWindow('mask', flags=cv2.WINDOW_NORMAL)
+        cv2.imshow('mask', self.mask)
         cv2.resizeWindow('mask', 500, 500)
 
         # Flag for up or down mouse position
