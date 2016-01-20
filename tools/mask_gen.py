@@ -63,7 +63,7 @@ class SegmentDrawer(object):
 
 
     def calc_window_size(self, max_window_width, max_window_height):
-        image_width, image_height, _ = self.image.shape
+        image_height, image_width, _ = self.image.shape
         ratio = min([float(max_window_height)/image_height, float(max_window_width)/image_width])
 
         window_width = int(ratio*image_width)
