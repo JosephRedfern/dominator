@@ -1,4 +1,5 @@
 import numpy as np
+import math
 import cv2
 import argparse
 
@@ -6,17 +7,20 @@ class SegmentDrawer(object):
 
     def __init__(self, image_filename=None, output_filename=None):
         # Read in the image and start the drawing
-        image = cv2.imread(image_filename)
-        self.mask = np.zeros((image.shape[0],image.shape[1],3), dtype='uint8')
+        self.image = cv2.imread(image_filename)
+    
+        window_width, window_height = self.calc_window_size(500, 500)
+        
+        self.mask = np.zeros((self.image.shape[0], self.image.shape[1],3), dtype='uint8')
         self.brush_size = 30
 
         cv2.namedWindow('draw', flags=cv2.WINDOW_NORMAL)
-        cv2.imshow('draw', image)
-        cv2.resizeWindow('draw', 500, 500)
+        cv2.imshow('draw', self.image)
+        cv2.resizeWindow('draw', window_width, window_height)
 
         cv2.namedWindow('mask', flags=cv2.WINDOW_NORMAL)
         cv2.imshow('mask', self.mask)
-        cv2.resizeWindow('mask', 500, 500)
+        cv2.resizeWindow('mask', window_width, window_height)
 
         # Flag for up or down mouse position
         self.drawing = False
@@ -34,7 +38,7 @@ class SegmentDrawer(object):
         while True:
             #Generate the image to draw based on image + mask
             if self.redraw_required:
-                combined_image = cv2.addWeighted(image, 0.6, self.mask, 0.4,0)
+                combined_image = cv2.addWeighted(self.image, 0.6, self.mask, 0.4,0)
                 cv2.imshow('draw', combined_image)
                 cv2.imshow('mask', self.mask)
                 self.redraw_required = False
@@ -42,14 +46,13 @@ class SegmentDrawer(object):
             #Escape functions
             k = cv2.waitKey(1) & 0xFF
             if k == 27:
-                if self.save:
-                    while True:
-                        input_var = input('You have specified a save file, would you like to save before quiting? [y/n]')
-                        if input_var.strip() == 'y':
-                            self.save_mask()
-                            break
-                        elif input_var.strip() == 'n':
-                            break
+                while self.save and True:
+                    input_var = input('You have specified a save file, would you like to save before quiting? [y/n]')
+                    if input_var.strip() == 'y':
+                        self.save_mask()
+                        break
+                    elif input_var.strip() == 'n':
+                        break
                 break
 
             elif k == ord('s'):
@@ -57,6 +60,16 @@ class SegmentDrawer(object):
 
         # Final clear up
         cv2.destroyAllWindows()
+
+
+    def calc_window_size(self, max_window_width, max_window_height):
+        image_width, image_height, _ = self.image.shape
+        ratio = min([float(max_window_height)/image_height, float(max_window_width)/image_width])
+
+        window_width = int(ratio*image_width)
+        window_height = int(ratio*image_height)
+
+        return window_width, window_height
 
 
     def select_pixel(self, event, x, y, flag, param):
