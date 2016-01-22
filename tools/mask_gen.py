@@ -1,12 +1,16 @@
+#!/usr/bin/env python
 import numpy as np
 import cv2
 import argparse
+
+
 
 class SegmentDrawer(object):
 
     def __init__(self, image_filename=None, output_filename=None):
         # Read in the image and start the drawing
         image = cv2.imread(image_filename)
+
         self.mask = np.zeros((image.shape[0],image.shape[1],3), dtype='uint8')
         self.brush_size = 30
 
@@ -19,7 +23,8 @@ class SegmentDrawer(object):
         cv2.resizeWindow('mask', 500, 500)
 
         # Flag for up or down mouse position
-        self.drawing = False
+        self.add_drawing = False
+        self.remove_drawing = False
         cv2.setMouseCallback('draw', self.select_pixel)
 
         # Output setting
@@ -52,6 +57,14 @@ class SegmentDrawer(object):
                             break
                 break
 
+            elif k == ord('+'):
+                self.enlarge_bursh()
+                print('bursh_size: {0}'.format(self.brush_size))
+
+            elif k == ord('-'):
+                self.shrink_brush()
+                print('bursh_size: {0}'.format(self.brush_size))
+
             elif k == ord('s'):
                 self.save_mask()
 
@@ -60,30 +73,51 @@ class SegmentDrawer(object):
 
 
     def select_pixel(self, event, x, y, flag, param):
-        ## Cannot find good description of required callback spec
+        ## Addative commands
         if event == cv2.EVENT_LBUTTONDOWN:
-            #Start
-            self.drawing = True
+            self.add_drawing = True
             self.mask[y-self.brush_size:y+self.brush_size, x-self.brush_size \
                     :x+self.brush_size,0:3] = 255
             self.redraw_required = True
 
-            print('Down')
         elif event == cv2.EVENT_LBUTTONUP:
-            #End
-            self.drawing = False
-            print('UP')
+            self.add_drawing = False
+
+        ## Subtractive commands
+        elif event == cv2.EVENT_RBUTTONDOWN:
+            self.remove_drawing = True
+            self.mask[y-self.brush_size:y+self.brush_size, x-self.brush_size \
+                    :x+self.brush_size,0:3] = 0
+            self.redraw_required = True
+
+        elif event == cv2.EVENT_RBUTTONUP:
+            self.remove_drawing = False
+
+        ### During mouse movement
         elif event == cv2.EVENT_MOUSEMOVE:
-            #Middle
-            print('hold')
-            if self.drawing == True:
+            if self.add_drawing == True and self.remove_drawing == True:
+                pass
+            if self.add_drawing == True:
                 self.mask[y-self.brush_size:y+self.brush_size, x-self.brush_size \
                         :x+self.brush_size,0:3] = 255
+                self.redraw_required = True
+
+            elif self.remove_drawing == True:
+                self.mask[y-self.brush_size:y+self.brush_size, x-self.brush_size \
+                        :x+self.brush_size,0:3] = 0
                 self.redraw_required = True
 
     def save_mask(self):
         np.save(self.output_filename, self.mask)
 
+    def enlarge_bursh(self):
+        self.brush_size = self.brush_size + self.brush_size*0.3
+
+    def shrink_brush(self):
+        if self.brush_size - self.brush_size*0.3 > 1:
+            self.brush_size = self.brush_size - self.brush_size*0.3
+        else:
+            self.brush_size = 1
 
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
