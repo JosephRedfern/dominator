@@ -68,8 +68,15 @@ class SegmentDrawer(object):
             elif k == ord('s'):
                 self.save_mask()
 
+            elif k == ord('n'):
+                self.next_frame()
+
         # Final clear up
         cv2.destroyAllWindows()
+
+    def next_frame():
+        #Calls the next frame of the video
+
 
 
     def select_pixel(self, event, x, y, flag, param):
