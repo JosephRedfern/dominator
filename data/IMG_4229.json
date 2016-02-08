@@ -1,6 +1,6 @@
 {
-    "scores" : false,
-    "end_val" : 16,
-    "end_values" : [ 5, 7, 4, 0],
-    "seg_map" : ""
+    "scores_bool" : false,
+    "end_val_num" : 16,
+    "end_values_set" : [ 5, 7, 4, 0],
+    "seg_map_nparray" : ""
 }
